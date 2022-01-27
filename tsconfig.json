@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "ESNext",
+        "moduleResolution": "Node",
+        "removeComments": false,
+        "outDir": "dist",
+        "sourceMap": true,
+        "watch": true,
+        //"outFile": "dist/sudokuSolver.js",
+        "declaration": true
+    },
+    "include": [
+        "src/**/*.ts"
+    ]
+}
