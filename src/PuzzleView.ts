@@ -11,40 +11,74 @@ type TextTemplatePart = {
 }
 
 const numberToCharBase = 36;
+/*
+    Reset = "\x1b[0m"
+    Bright = "\x1b[1m"
+    Dim = "\x1b[2m"
+    Underscore = "\x1b[4m"
+    Blink = "\x1b[5m"
+    Reverse = "\x1b[7m"
+    Hidden = "\x1b[8m"
+
+    FgBlack = "\x1b[30m"
+    FgRed = "\x1b[31m"
+    FgGreen = "\x1b[32m"
+    FgYellow = "\x1b[33m"
+    FgBlue = "\x1b[34m"
+    FgMagenta = "\x1b[35m"
+    FgCyan = "\x1b[36m"
+    FgWhite = "\x1b[37m"
+
+    BgBlack = "\x1b[40m"
+    BgRed = "\x1b[41m"
+    BgGreen = "\x1b[42m"
+    BgYellow = "\x1b[43m"
+    BgBlue = "\x1b[44m"
+    BgMagenta = "\x1b[45m"
+    BgCyan = "\x1b[46m"
+    BgWhite = "\x1b[47m"
+*/
 const colorEnd = '\x1b[0m';
 const colorStart: Array<string> = [
-    '', 
-    '\x1b[31m',
-    '\x1b[32m',
-    '\x1b[33m',
-    '\x1b[34m',
-    '\x1b[35m',
-    '\x1b[36m',
-    '\x1b[43m\x1b[30m',
-    '\x1b[47m\x1b[30m',
-    '\x1b[46m\x1b[30m',
-    '\x1b[31m',
-    '\x1b[32m',
-    '\x1b[33m',
-    '\x1b[34m',
-    '\x1b[35m',
-    '\x1b[36m',
-    '\x1b[43m\x1b[30m',
-    '\x1b[47m\x1b[30m',
+    '\x1b[41m\x1b[30m', 
+    '\x1b[42m\x1b[30m', 
+    '\x1b[43m\x1b[30m', 
+    '\x1b[44m\x1b[30m', 
+    '\x1b[45m\x1b[30m', 
     '\x1b[46m\x1b[30m', 
+    '\x1b[47m\x1b[30m',
+
+    '\x1b[41m\x1b[1m\x1b[37m', 
+    '\x1b[42m\x1b[1m\x1b[37m', 
+    '\x1b[43m\x1b[34m', 
+    '\x1b[44m\x1b[1m\x1b[33m', 
+    '\x1b[45m\x1b[1m\x1b[37m', 
+    '\x1b[46m\x1b[1m\x1b[33m', 
+    '\x1b[47m\x1b[31m',    
 ];
 
-export const numberToCharColored = (n: number) => {    
+export function numberToChar(n: number) {
+    return n.toString(numberToCharBase).toUpperCase();
+}
+
+
+export function renderNumberColored(n: number) {    
     const colorIndex = n % colorStart.length;
     const value = (n - colorIndex) / colorStart.length;
-    const valueStr = value.toString(numberToCharBase).toUpperCase();
+    if (n === 0) return ' . ';
 
-    if (colorIndex === 0) return valueStr;
-    return colorStart[colorIndex] + valueStr + colorEnd;
+    const valueStr = numberToChar(value);
+    return colorStart[colorIndex] + ' ' + valueStr + ' ' + colorEnd;
 };
 
-export const numberToChar = (n: number) => n.toString(numberToCharBase).toUpperCase();
-export const charToNumber = (c: string) => Number.parseInt(c, numberToCharBase);
+export function renderNumber(n: number) {
+    if (n === 0) return '.';
+    return numberToChar(n - 1);
+}
+
+export function charToNumber(c: string) {
+    return Number.parseInt(c, numberToCharBase);
+}
 
 export function readArrayNumber(originalString: string | Array<number>): Array<number> {
     if (typeof originalString !== 'string') return originalString;
@@ -53,7 +87,7 @@ export function readArrayNumber(originalString: string | Array<number>): Array<n
         .split('')
         .filter(e => IS_CELL_REG.test(e))
         .map(e => IS_CELL_EMPTY.test(e) ? '0' : e)
-        .map(charToNumber)
+        .map(e => charToNumber(e));
     ;        
 }
 
@@ -95,12 +129,12 @@ export class TextTemplate {
     }
 
     renderNumbers(values: Array<number>): string {
-        const preparedValues = values.map(v => numberToChar(v));
+        const preparedValues = values.map(v => renderNumber(v));
         return this.renderBase(preparedValues);
     }    
 
-    renderNumbersColored(values: Array<number>): string {
-        const preparedValues = values.map(v => numberToCharColored(v));
+    renderNumbersColoredFat(values: Array<number>): string {
+        const preparedValues = values.map(v => renderNumberColored(v));
         return this.renderBase(preparedValues);
     }      
 
