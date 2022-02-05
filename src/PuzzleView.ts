@@ -10,8 +10,41 @@ type TextTemplatePart = {
     cell?: PuzzleCell;
 }
 
-export const numberToChar = (n: number) => n.toString(36).toUpperCase();
-export const charToNumber = (c: string) => Number.parseInt(c, 36);
+const numberToCharBase = 36;
+const colorEnd = '\x1b[0m';
+const colorStart: Array<string> = [
+    '', 
+    '\x1b[31m',
+    '\x1b[32m',
+    '\x1b[33m',
+    '\x1b[34m',
+    '\x1b[35m',
+    '\x1b[36m',
+    '\x1b[43m\x1b[30m',
+    '\x1b[47m\x1b[30m',
+    '\x1b[46m\x1b[30m',
+    '\x1b[31m',
+    '\x1b[32m',
+    '\x1b[33m',
+    '\x1b[34m',
+    '\x1b[35m',
+    '\x1b[36m',
+    '\x1b[43m\x1b[30m',
+    '\x1b[47m\x1b[30m',
+    '\x1b[46m\x1b[30m', 
+];
+
+export const numberToCharColored = (n: number) => {    
+    const colorIndex = n % colorStart.length;
+    const value = (n - colorIndex) / colorStart.length;
+    const valueStr = value.toString(numberToCharBase).toUpperCase();
+
+    if (colorIndex === 0) return valueStr;
+    return colorStart[colorIndex] + valueStr + colorEnd;
+};
+
+export const numberToChar = (n: number) => n.toString(numberToCharBase).toUpperCase();
+export const charToNumber = (c: string) => Number.parseInt(c, numberToCharBase);
 
 export function readArrayNumber(originalString: string | Array<number>): Array<number> {
     if (typeof originalString !== 'string') return originalString;
@@ -48,20 +81,28 @@ export class TextTemplate {
         });
     }
 
-    render(values: Array<string | number>): string {
+    private renderBase(values: Array<string>): string {
         let templateIndex = 0;
         const preparedArr = this._template.map((part, index) => {
-            const value =
-                (part.type === 'cell') ?
-                values[templateIndex++] :
-                part.value;
-
-            if (typeof value === 'number') return numberToChar(value);
-            return value;
+            return (part.type === 'cell') ? values[templateIndex++] : part.value;
         });
 
         return preparedArr.join('');
     }
+
+    render(values: Array<string>): string {
+        return this.renderBase(values);
+    }
+
+    renderNumbers(values: Array<number>): string {
+        const preparedValues = values.map(v => numberToChar(v));
+        return this.renderBase(preparedValues);
+    }    
+
+    renderNumbersColored(values: Array<number>): string {
+        const preparedValues = values.map(v => numberToCharColored(v));
+        return this.renderBase(preparedValues);
+    }      
 
     static trimTemplate(template: string): string {
         const templateLines = template.split('\n').filter(line => line.trim().length > 0);
