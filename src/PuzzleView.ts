@@ -67,7 +67,7 @@ export function renderNumberColored(n: number) {
     const value = (n - colorIndex) / colorStart.length;
     if (n === 0) return ' . ';
 
-    const valueStr = numberToChar(value);
+    const valueStr = numberToChar(n);
     return colorStart[colorIndex] + ' ' + valueStr + ' ' + colorEnd;
 };
 

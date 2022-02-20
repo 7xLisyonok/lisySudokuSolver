@@ -40,6 +40,18 @@ export class PuzzleBlockUnique extends PuzzleBlock {
         return cr;
     }
 
+    /**
+     * some action when block's cell value change
+     */
+    override cellChange(changedCell: PuzzleCell, newValue: number, oldValue: number): void {
+        //console.log('cell ', changedCell.index, ' change value from ', oldValue, ' to ', newValue);
+        
+        if (newValue > 0) {
+            this.cells.forEach(cell => cell.removeCandidate(newValue));
+        }
+    }
+
+    /*
     override removeCandidates(candidatesList: Set<number>, cell: PuzzleCell) {
         this.cells.forEach(blockCell => {
             if (blockCell === cell) return;
@@ -47,10 +59,5 @@ export class PuzzleBlockUnique extends PuzzleBlock {
             candidatesList.delete(blockCell.value);
         })
     }
-
-    override solve(): Array<PuzzleCell> {
-        //const 
-
-        return [];
-    }
+    */
 }

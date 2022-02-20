@@ -56,13 +56,16 @@ export function createPuzzle(desc: PuzzleDescription) {
     */
 
     const task = readArrayNumber(desc.task);
-    task.forEach(value => puzzle.addCell(value));
+    task.forEach(value => puzzle.addCell(0));
 
     desc.blocks.forEach(blockDesc => {
         const currBlocks = puzzle.createBlocks(blockDesc);
         puzzle.addBlock(...currBlocks);
     });
 
+    task.forEach((value, index) => {
+        if (value > 0) puzzle.field[index].value = value;
+    });
     puzzle.saveTask();
 
     const viewTemplate = 'template' in desc ? desc.template : desc.task;
@@ -122,6 +125,17 @@ export class Puzzle {
         return c;
     }
 
+    public resetCandidates() {
+        this.field.forEach(cell => cell.resetCandidates());
+    }
+
+    public reset() {
+        this.field.forEach(cell => {
+            cell.value = 0;
+            cell.resetCandidates();
+        });
+    }    
+
     /**
      * mark all current active cells with value as "isTask"
      */
@@ -137,7 +151,17 @@ export class Puzzle {
     }
 
     /** 
-     * 
+     * return solve Array
+     */
+     public get solveArray() {
+        return this.field
+            .filter(cell => cell.isActive && !cell.isTask)
+            .map(cell => cell.value)
+        ;
+    }
+
+    /** 
+     * return solve string
      */
     public get solveString() {
         return this.field
@@ -146,6 +170,21 @@ export class Puzzle {
             .join('')
         ;
     }
+
+    /** 
+     * array with every cell's value number
+     */
+    public get valuesArray(): Array<number> {
+        return this.field.map(cell => cell.value);
+    }
+
+    /** 
+     * array with every cell's value number
+     */
+    public set valuesArray(newValues: Array<number>) {
+        this.resetCandidates();
+        newValues.forEach((newValue, index) => this.field[index].value = newValue);
+    } 
 
     /** 
      * string with every cell's valueChar
@@ -161,6 +200,7 @@ export class Puzzle {
      * string with every cell's valueChar
      */
     public set valuesString(newValues: string) {
+        this.resetCandidates();
         newValues.split('').forEach((char, index) => this.field[index].valueChar = char);
     } 
 
@@ -173,6 +213,16 @@ export class Puzzle {
      */
     public checkFast(): boolean {
         return this.blocks.every(block => block.checkFast());
+    }
+
+    /**
+     * check all blocks filled right
+     */
+    public checkViaCandidates(): boolean {
+        return this.field
+            .filter(cell => !cell.hasValue)
+            .map(cell => cell.candidates)
+            .every(candidates => candidates.size > 0);
     }
 
     /**

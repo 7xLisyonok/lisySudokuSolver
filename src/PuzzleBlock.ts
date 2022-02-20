@@ -20,20 +20,28 @@ export abstract class PuzzleBlock {
     /**
      * remove candidates for cell
      */
+    /*
     public removeCandidates(candidatesList: Set<number>, cell: PuzzleCell): void {
+        // no changes by default
+        return;
+    }
+    */
+
+    /**
+     * some action when block's cell value change
+     */
+    public cellChange(cell: PuzzleCell, newValue: number, oldValue: number): void {
         // no changes by default
         return;
     }
 
     /**
-     * solve puzzle via block's logic
-     * can override via childrens
-     * @returns Array with changed cells
+     * some action when block's cell value change
      */
-    public solve(): Array<PuzzleCell> {
+     public cellCandidatesChange(cell: PuzzleCell): void {
         // no changes by default
-        return [];
-    }
+        return;
+    }    
 
     constructor(puzzle: Puzzle) {
         this.puzzle = puzzle;
@@ -42,7 +50,9 @@ export abstract class PuzzleBlock {
     addCell(...cells: Array<PuzzleCell>) {
         cells.forEach(cell => {
             this._cells.add(cell);
-            cell.addBlock(this);
+            cell.isActive = true;
+            cell.onChange((cell, newValue, oldValue) => this.cellChange(cell, newValue, oldValue));
+            //cell.addBlock(this);
         });
     }
 
