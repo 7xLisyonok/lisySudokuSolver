@@ -1,5 +1,5 @@
 {
-  "name": "lisy-sudoku-solver",
+  "name": "7x-sudoku-solver",
   "version": "1.0.0",
   "description": "sudoku solver",
   "main": "dist/index.js",
