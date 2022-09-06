@@ -44,43 +44,50 @@ export class Random {
 }
 
 
-// TODO: extends IntMixer from array?
-class IntMixer {
-    private _arr: Array<number> = [];
-    private _length: number
-    forEach = this._arr.forEach
-    map = this._arr.map
+
+class IntMixer extends Array<number> {
+    private _length: number;
 
     constructor (
         private _from: number, 
         private _to: number
     ) {
-        this._length = this._to - this._from;
-        this.createArray();
+        const length = _to - _from;
+        super(length);
+        this._length = length;
 
-        if (this._length  <= 0) {
+        this.fillArray();
+
+        if (length <= 0) {
             throw new Error("IntMixer length <= 0");
         }
     }
 
-    private createArray() {
-        this._arr = Array.from({ length: this._length }, (_, i) => i + this._from);
-        Random.mixArray(this._arr);
+    private fillArray() {
+        for(let i = 0; i < this._length; i++) this[i] = i + this._from;
+        Random.mixArray(this);
     }
 
     has(count: number) {
-        return this._arr.length >= count;
+        return this.length >= count;
     }
 
-    read(): number | undefined {
-        return this._arr.pop();
+    readOne(): number | undefined {
+        return this.pop();
     }
 
-    readLoop(count: number): Array<number> {
+    readOneLoop(): number | undefined {
+        if (this.length === 0) this.fillArray();
+        return this.pop();
+    }
+
+    //readLoop(count: number): Array<number> {
+        /*
         if (this.has(count)) return this._arr.splice(-count);        
         const result = this._arr;
         this.createArray();
         result.push(...this.readLoop(count - result.length));
         return result;
-    }
+        */
+    //}
 }
