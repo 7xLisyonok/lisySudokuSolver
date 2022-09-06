@@ -7,14 +7,12 @@ import { createRange } from "./PuzzleUtils.js";
 import { numberToChar, PuzzleViewText } from "./PuzzleView.js";
 import { Random } from "./Random.js";
 
-
-import * as readline from "readline";
-
-
 const HARDEST_NONE = 0;
 const HARDEST_EASY = 1;
 const HARDEST_FINE = 5;
 const HARDEST_HARD = 20;
+
+type SolveCallback  = (index: number, currSolve: Solve, isFull: boolean, solves: Array<Solve>, tempSolves: Array<Solve>) => void;
 
 export class PuzzleSolver {
     private _puzzle: Puzzle;
@@ -23,7 +21,7 @@ export class PuzzleSolver {
         this._puzzle = p;
     }
 
-    public solve(view: PuzzleViewText) {
+    public solve(callback?: SolveCallback): Array<Solve> {
         //this._puzzle.solveString
         const solves: Array<Solve> = [];
         const tempSolves: Array<Solve> = [];
@@ -34,13 +32,6 @@ export class PuzzleSolver {
         
         while(tempSolves.length > 0) {
             tempSolvesProccessed++;
-            if (tempSolvesProccessed % solvesRestart === 0) {
-                console.log('solves found: %s, tempSolvesProccessed: %s, tempSolves.length: %s', solves.length, tempSolvesProccessed, tempSolves.length);
-                //const lastSolve = tempSolves[tempSolves.length - 1];
-                //console.log('last solve: ', lastSolve.map(v => numberToChar(v)).join(''));
-                //const firstSolve = tempSolves[0];
-                //console.log('first solve: ', firstSolve.map(v => numberToChar(v)).join(''));
-            }
             let currTemp: Solve;
             //
             // TODO: Подумать не над счётчиком заполненных ячеек, отслеживать не количество промежуточных решений,
@@ -58,18 +49,25 @@ export class PuzzleSolver {
             this._puzzle.valuesArray = currTemp;
             const iterationResult = this.solveViaLogic();
             const iterationValues: Solve = this._puzzle.valuesArray;
-            
-            readline.cursorTo(process.stdout, 0, 0);
-            console.log('---------------------------------');
-            console.log(view.render());
-            console.log('---------------------------------');
+            const isFull = this._puzzle.checkFull();
 
-            if (this._puzzle.checkFull()) {
+            if (callback) {
+                callback(tempSolvesProccessed, iterationValues, isFull, solves, tempSolves);
+            }
+
+            if (isFull) {
                 // TODO: Разобраться, нужно ли проверять решение тут?
                 // Возможнно логика из-за отсутствия перебора, всегда решает верно и проверки заполненности достаточно.
                 //if (this._puzzle.checkFast()) {
                     solves.push(iterationValues);
                 //}
+            }
+
+            if (callback) {
+                callback(tempSolvesProccessed, iterationValues, isFull, solves, tempSolves);
+            }            
+
+            if (isFull) {
                 if (solves.length === 1) break;
                 continue;
             }
@@ -121,8 +119,7 @@ export class PuzzleSolver {
             tempSolves.push(...filteredCandidatesSolves);
         }
 
-        console.log('tempSolvesProccessed: ', tempSolvesProccessed);
-        console.log('solves: ', solves.map(solve => solve.map(v => numberToChar(v)).join('')));
+        return solves;
     }
 
     private solveSplitWithSet(solve: Solve, index: number, candidates: Set<number>): Array<Solve> {
@@ -139,6 +136,7 @@ export class PuzzleSolver {
         return newSolve;
     }
 
+    // TODO: Остановка алгоритма сразу, как только появилась клетка без кандидатов ?
     public solveViaLogic(): SolverResult {
         const result = new SolverResult();
 
